@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base Core Combo Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .core-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #delete-btn, #calc-btn {
+            background-color: #f44336;
+            margin: 5px;
+        }
+        #delete-btn:hover, #calc-btn:hover {
+            background-color: #da190b;
+        }
+        #selected-cores {
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        #output {
+            width: 80%;
+            max-width: 600px;
+            height: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            overflow-y: auto;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Base Core Combo Calculator</h1>
+    <div class="core-buttons" id="core-buttons"></div>
+    <div>
+        <button id="delete-btn" onclick="deleteLast()">Delete Last</button>
+        <button id="calc-btn" onclick="calculateCombos()">Calculate Combos</button>
+    </div>
+    <div id="selected-cores">Selected Base Cores: None</div>
+    <div id="output"></div>
+
+    <script>
+        // Combo dictionary (same as your Python version)
+        const combos = {
+            "Silver,Time": "Lotto",
+            "Silver,Dragon": "Intangibility",
+            "Silver,Opposition": "Invulnerability",
+            "Silver,Glow": "Transcendence",
+            "Silver,Magma": "Turbo",
+            "Silver,Corrupt": "Contract",
+            "Silver,Crystal": "Theft",
+            "Silver,Figuration": "Mythical",
+            "Silver,Glass": "Partial Paradox",
+            "Silver,Blood": "Misconception",
+            "Silver,Electric": "Tech",
+            "Silver,Nature": "Loan",
+            "Silver,Copper": "Business",
+            "Silver,Honey": "Broken",
+            "Silver,Stone": "Platinum",
+            "Time,Dragon": "Paranormal",
+            "Time,Opposition": "Heavenly",
+            "Time,Glow": "Insight",
+            "Time,Magma": "Flare",
+            "Time,Corrupt": "Tape",
+            "Time,Crystal": "Astral",
+            "Time,Figuration": "Necromancy",
+            "Time,Glass": "Hourglass",
+            "Time,Blood": "Fallen Angel",
+            "Time,Electric": "Paradox",
+            "Time,Nature": "Seasonal",
+            "Time,Copper": "Timer",
+            "Time,Honey": "Community",
+            "Time,Stone": "Calendar",
+            "Dragon,Opposition": "Death",
+            "Dragon,Glow": "Recovery",
+            "Dragon,Magma": "Incarnation",
+            "Dragon,Corrupt": "Monstrosity",
+            "Dragon,Crystal": "Perfume",
+            "Dragon,Figuration": "Wendigo",
+            "Dragon,Glass": "Image",
+            "Dragon,Blood": "Medieval",
+            "Dragon,Electric": "Soul",
+            "Dragon,Nature": "Art",
+            "Dragon,Copper": "Jurisdiction",
+            "Dragon,Honey": "Disable",
+            "Dragon,Stone": "Statue",
+            "Opposition,Glow": "Sports",
+            "Opposition,Magma": "Radiant",
+            "Opposition,Corrupt": "Copy",
+            "Opposition,Crystal": "Gravity",
+            "Opposition,Figuration": "Toon",
+            "Opposition,Glass": "Exchange",
+            "Opposition,Blood": "Tycoon",
+            "Opposition,Electric": "Social",
+            "Opposition,Nature": "Opposal",
+            "Opposition,Copper": "Contradiction",
+            "Opposition,Honey": "Repulsion",
+            "Opposition,Stone": "Principle",
+            "Glow,Magma": "Explosion",
+            "Glow,Corrupt": "Twilight",
+            "Glow,Crystal": "Realm",
+            "Glow,Figuration": "Master",
+            "Glow,Glass": "Integration",
+            "Glow,Blood": "Sorcery",
+            "Glow,Electric": "Riftic",
+            "Glow,Nature": "Book",
+            "Glow,Copper": "Steampunk",
+            "Glow,Honey": "Microbe",
+            "Glow,Stone": "Glowstone",
+            "Magma,Corrupt": "Infraction",
+            "Magma,Crystal": "Atomic",
+            "Magma,Figuration": "Hellish",
+            "Magma,Glass": "Insanity",
+            "Magma,Blood": "Demon",
+            "Magma,Electric": "Plasma",
+            "Magma,Nature": "Ashe",
+            "Magma,Copper": "Aero",
+            "Magma,Honey": "Emergency",
+            "Magma,Stone": "Volcano",
+            "Corrupt,Crystal": "Shade",
+            "Corrupt,Figuration": "Reinforcement",
+            "Corrupt,Glass": "Leader",
+            "Corrupt,Blood": "Corruption",
+            "Corrupt,Electric": "Oni",
+            "Corrupt,Nature": "Chess",
+            "Corrupt,Copper": "Weapon",
+            "Corrupt,Honey": "Bee",
+            "Corrupt,Stone": "Sculpture",
+            "Crystal,Figuration": "Nostalgia",
+            "Crystal,Glass": "Assault",
+            "Crystal,Blood": "Stockbroker",
+            "Crystal,Electric": "Shockwave",
+            "Crystal,Nature": "Plastic",
+            "Crystal,Copper": "Grail",
+            "Crystal,Honey": "Dream",
+            "Crystal,Stone": "Ore",
+            "Figuration,Glass": "Fission",
+            "Figuration,Blood": "DNA",
+            "Figuration,Electric": "Aid",
+            "Figuration,Nature": "Farm",
+            "Figuration,Copper": "Bioaugmentation",
+            "Figuration,Honey": "Cure",
+            "Figuration,Stone": "Fossil",
+            "Glass,Blood": "Staggering",
+            "Glass,Electric": "Game",
+            "Glass,Nature": "Irregularity",
+            "Glass,Copper": "Oracle",
+            "Glass,Honey": "Breaking",
+            "Glass,Stone": "Shatter",
+            "Blood,Electric": "Party",
+            "Blood,Nature": "Pirate",
+            "Blood,Copper": "Vital",
+            "Blood,Honey": "Traffic",
+            "Blood,Stone": "Ritual",
+            "Electric,Nature": "Tree",
+            "Electric,Copper": "Archaic",
+            "Electric,Honey": "Enhancement",
+            "Electric,Stone": "Comet",
+            "Nature,Copper": "Concealment",
+            "Nature,Honey": "Sap",
+            "Nature,Stone": "Dust",
+            "Copper,Honey": "Friction",
+            "Copper,Stone": "Petrification",
+            "Honey,Stone": "Addiction"
+        };
+
+        const baseCores = [
+            "Silver", "Time", "Dragon", "Opposition", "Glow", "Magma", "Corrupt",
+            "Crystal", "Figuration", "Glass", "Blood", "Electric", "Nature",
+            "Copper", "Honey", "Stone"
+        ];
+
+        let selectedCores = [];
+
+        // Dynamically create buttons for Base Cores
+        const buttonContainer = document.getElementById("core-buttons");
+        baseCores.forEach(core => {
+            const btn = document.createElement("button");
+            btn.textContent = core;
+            btn.onclick = () => addCore(core);
+            buttonContainer.appendChild(btn);
+        });
+
+        // Add a Base Core
+        function addCore(core) {
+            if (!selectedCores.includes(core)) {
+                selectedCores.push(core);
+                updateSelectedDisplay();
+            }
+        }
+
+        // Delete the last Base Core
+        function deleteLast() {
+            if (selectedCores.length > 0) {
+                selectedCores.pop();
+                updateSelectedDisplay();
+            }
+        }
+
+        // Update the selected cores display
+        function updateSelectedDisplay() {
+            const selectedDiv = document.getElementById("selected-cores");
+            selectedDiv.textContent = selectedCores.length > 0
+                ? "Selected Base Cores: " + selectedCores.join(", ")
+                : "Selected Base Cores: None";
+            document.getElementById("output").textContent = "";
+        }
+
+        // Calculate and display combos
+        function calculateCombos() {
+            const output = document.getElementById("output");
+            output.textContent = "";
+            if (selectedCores.length < 2) {
+                output.textContent = "Please select at least 2 Base Cores!";
+                return;
+            }
+
+            let result = [];
+            for (let i = 0; i < selectedCores.length; i++) {
+                for (let j = i + 1; j < selectedCores.length; j++) {
+                    const key1 = `${selectedCores[i]},${selectedCores[j]}`;
+                    const key2 = `${selectedCores[j]},${selectedCores[i]}`;
+                    if (combos[key1]) {
+                        result.push(`${selectedCores[i]} × ${selectedCores[j]} = ${combos[key1]}`);
+                    } else if (combos[key2]) {
+                        result.push(`${selectedCores[i]} × ${selectedCores[j]} = ${combos[key2]}`);
+                    }
+                }
+            }
+
+            if (result.length > 0) {
+                output.textContent = `Total Combos: ${result.length}\n\n${result.map((combo, idx) => `${idx + 1}. ${combo}`).join("\n")}`;
+            } else {
+                output.textContent = "No valid combos found for the selected Base Cores.";
+            }
+        }
+    </script>
+</body>
+</html>
